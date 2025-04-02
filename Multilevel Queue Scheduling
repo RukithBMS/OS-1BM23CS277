@@ -1,0 +1,116 @@
+#include <stdio.h>
+#define TQ 3
+
+typedef struct
+{
+    int id, at, bt, rt, wt, tat, ct, st, q;
+} P;
+
+void rr(P q1[], int n1)
+{
+    int t = 0, i, done;
+
+    printf("\nExecuting Queue 1 (Round Robin):\n");
+
+    for (i = 0; i < n1; i++) {
+        q1[i].st = -1; 
+    }
+
+    do
+    {
+        done = 1;
+        for (i = 0; i < n1; i++)
+        {
+            if (q1[i].rt > 0)
+            {
+                done = 0;
+                if (q1[i].rt > TQ)
+                {
+                    printf("P%d -> ", q1[i].id);
+                    if (q1[i].st == -1) {
+                        q1[i].st = t;
+                    }
+                    t += TQ;
+                    q1[i].rt -= TQ;
+                }
+                else
+                {
+                    printf("P%d -> ", q1[i].id);
+                    if (q1[i].st == -1) {
+                        q1[i].st = t; 
+                    }
+                    t += q1[i].rt;
+                    q1[i].ct = t; 
+                    q1[i].rt = 0;
+                }
+            }
+        }
+    } while (!done);
+
+    for (i = 0; i < n1; i++) {
+        q1[i].wt = q1[i].ct - q1[i].at - q1[i].bt;
+    }
+}
+
+void fcfs(P q2[], int n2, int start_time)
+{
+    int t = start_time;
+    printf("\nExecuting Queue 2 (FCFS):\n");
+
+    for (int i = 0; i < n2; i++)
+    {
+        if (t < q2[i].at)
+            t = q2[i].at;
+        printf("P%d -> ", q2[i].id);
+        t += q2[i].bt;
+        q2[i].ct = t; 
+        q2[i].wt = t - q2[i].at - q2[i].bt;
+    }
+}
+
+int main()
+{
+    int n, i, n1 = 0, n2 = 0;
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    P p[n], q1[n], q2[n];
+
+    for (i = 0; i < n; i++)
+    {
+        printf("Enter AT, BT, and Queue (1=RR, 2=FCFS) for P%d: ", i + 1);
+        scanf("%d %d %d", &p[i].at, &p[i].bt, &p[i].q);
+        p[i].id = i + 1;
+        p[i].rt = p[i].bt;
+        p[i].wt = 0;
+        p[i].tat = 0;
+        p[i].ct = 0;
+
+        if (p[i].q == 1)
+            q1[n1++] = p[i];
+        else
+            q2[n2++] = p[i];
+    }
+
+    rr(q1, n1);
+
+    int total_time = 0;
+    for (i = 0; i < n1; i++)
+        total_time = (q1[i].ct>total_time)?q1[i].ct:total_time;
+
+    fcfs(q2, n2, total_time);
+
+    printf("\n\nP\tQ\tWT\tTAT\tCT\tRT\n");
+    for (i = 0; i < n1; i++)
+    {
+        q1[i].tat = q1[i].wt + q1[i].bt;
+        printf("P%d\tRR\t%d\t%d\t%d\t%d\n", q1[i].id, q1[i].wt, q1[i].tat, q1[i].ct, q1[i].bt);
+    }
+    for (i = 0; i < n2; i++)
+    {
+        q2[i].tat = q2[i].wt + q2[i].bt;
+        printf("P%d\tFCFS\t%d\t%d\t%d\t%d\n", q2[i].id, q2[i].wt, q2[i].tat, q2[i].ct, q2[i].bt);
+    }
+
+    return 0;
+}
